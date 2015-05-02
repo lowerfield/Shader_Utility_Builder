@@ -1,0 +1,262 @@
+#! /Applications/Nuke9.0v5/Nuke9.0v5.app/Contents/MacOS//libnuke-9.0.5.dylib -nx
+version 9.0 v5
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="22" w="1440" h="829" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="777" stretch="1"/>
+            <splitter orientation="2">
+                <split size="367"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="436"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /Users/manuelperez/Desktop/Shader_Utility_Builder/Shader_Utility_Builder_v001.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x8e388e00
+ label direct_lighting
+ note_font_size 42
+ xpos -287
+ ypos -148
+ bdwidth 135
+ bdheight 258
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0x8e388e00
+ label indirect_lighting
+ note_font_size 42
+ xpos -287
+ ypos -413
+ bdheight 201
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode3
+ tile_color 0x71c67100
+ label rgba
+ note_font_size 42
+ xpos -287
+ ypos -617
+ bdheight 108
+}
+Text2 {
+ inputs 0
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message rgba
+ old_message {{114 103 98 97}
+   }
+ box {816.5 699.5 1223.5 900.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 0 200}
+   }
+ cursor_position 4
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{816.5 900.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text7
+ xpos -277
+ ypos -547
+}
+add_layer {indirect_difuse indirect_difuse.red indirect_difuse.green indirect_difuse.blue indirect_difuse.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output indirect_difuse
+ message indirect_difuse
+ old_message {{105 110 100 105 114 101 99 116 95 100 105 102 117 115 101}
+   }
+ box {380.5 689.5 1739.5 890.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200}
+   }
+ cursor_position 15
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{380.5 890.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text4
+ xpos -277
+ ypos -333
+}
+add_layer {indirect_refraction indirect_refraction.red indirect_refraction.green indirect_refraction.blue indirect_refraction.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output indirect_refraction
+ message indirect_refraction
+ old_message {{105 110 100 105 114 101 99 116 95 114 101 102 114 97 99 116 105 111 110}
+   }
+ box {208.5 744.5 1901.5 945.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200 15 200 16 200 17 200 18 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200}
+   }
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{208.5 945.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text5
+ xpos -277
+ ypos -288
+}
+add_layer {indirect_specular indirect_specular.red indirect_specular.green indirect_specular.blue indirect_specular.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output indirect_specular
+ message indirect_specular
+ old_message {{105 110 100 105 114 101 99 116 95 115 112 101 99 117 108 97 114}
+   }
+ box {208.5 744.5 1785.5 945.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200 15 200 16 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200}
+   }
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{208.5 945.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text6
+ xpos -277
+ ypos -248
+}
+add_layer {direct_difuse direct_difuse.red direct_difuse.green direct_difuse.blue direct_difuse.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output direct_difuse
+ message direct_difuse
+ old_message {{100 105 114 101 99 116 95 100 105 102 117 115 101}
+   }
+ box {380.5 689.5 1557.5 890.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200}
+   }
+ cursor_position 13
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{380.5 890.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text1
+ xpos -277
+ ypos -68
+}
+add_layer {direct_refraction direct_refraction.red direct_refraction.green direct_refraction.blue direct_refraction.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output direct_refraction
+ message direct_refraction
+ old_message {{100 105 114 101 99 116 95 114 101 102 114 97 99 116 105 111 110}
+   }
+ box {208.5 744.5 1719.5 945.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200 15 200 16 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200}
+   }
+ cursor_position 17
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{208.5 945.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text2
+ xpos -277
+ ypos -23
+}
+add_layer {direct_specular direct_specular.red direct_specular.green direct_specular.blue direct_specular.alpha}
+Text2 {
+ font_size_toolbar 200
+ font_width_toolbar 100
+ font_height_toolbar 100
+ output direct_specular
+ message direct_specular
+ old_message {{100 105 114 101 99 116 95 115 112 101 99 117 108 97 114}
+   }
+ box {208.5 744.5 1603.5 945.5}
+ transforms {{0 2}
+   }
+ font_size_values {{0 200 1 200 2 200 3 200 4 200 5 200 6 200 7 200 8 200 9 200 10 200 11 200 12 200 13 200 14 200 0 200 1 200 2 200 3 200 4 200 5 200 6 200}
+   }
+ cursor_position 15
+ font_size 200
+ scale {1 1}
+ cursor_initialised true
+ initial_cursor_position {{208.5 945.5}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1024 778 0 0 1 1 0 0 0 0}
+   }
+ name Text3
+ xpos -277
+ ypos 17
+}
+Viewer {
+ frame 1
+ frame_range 1-100
+ name Viewer1
+ xpos -277
+ ypos 666
+}
