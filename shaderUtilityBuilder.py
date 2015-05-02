@@ -1,3 +1,44 @@
+import re
+
+
+def getLayers(node):
+
+    # set aovs and utility layers
+    aovList = list(set([c.split('.')[0] for c in node.channels() 
+            if re.search('indirect',c) or re.search('direct',c) 
+            or re.search('rgba',c) ]))
+    
+    utilityList = list(set([c.split('.')[0] for c in node.channels()]))
+    
+    for layer in aovList:
+        utilityList.remove(layer)
+    
+    return aovList, utilityList
+
+
+def spitLayers(node,layer):
+
+    s = nuke.nodes.Shuffle(inputs = [node])
+    s['in'].setValue(layer)
+    s['postage_stamp'].setValue(True)
+    s['name'].setValue(layer)
+
+    return s 
+
+
+def getLayers(node):
+
+    # set aovs and utility layers
+    aovList = list(set([c.split('.')[0] for c in node.channels() 
+            if re.search('indirect',c) or re.search('direct',c) 
+            or re.search('rgba',c) ]))
+    
+    utilityList = list(set([c.split('.')[0] for c in node.channels()]))
+    
+    for layer in aovList:
+        utilityList.remove(layer)
+    
+    return aovList, utilityList
 
 
 def setPos(inputNode, node, x = 0, y = 100):
