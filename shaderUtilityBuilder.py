@@ -1,10 +1,8 @@
-# node positioning function
+
 
 def setPos(inputNode, node, x = 0, y = 100):
 
-    nodeXYPos = {'xpos' : int(inputNode['xpos'].value()), 
-                'ypos' : int(inputNode['ypos'].value())}
-
+    # node positioning function
     node.setXYpos(int(inputNode['xpos'].value()) + x, int(inputNode['ypos'].value()) + y)
     
     return
@@ -33,7 +31,6 @@ def main():
     except:
         nuke.message('No node selected')
 
-main()
 
 
 
