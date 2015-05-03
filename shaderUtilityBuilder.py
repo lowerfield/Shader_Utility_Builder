@@ -119,6 +119,12 @@ def shaderBuilder():
     
         group = nuke.nodes.Group(name = 'Shader_Build', postage_stamp = 'True', inputs =[node])
         setPos(node, group, x = -25)
+
+        count = 1
+        while nuke.exists('Shader_Build' + str(count)):
+            count += 1
+        
+        group['name'].setValue('Shader_Build' + str(count))
         
         # begin group
         group.begin()
