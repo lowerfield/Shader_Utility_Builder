@@ -1,31 +1,36 @@
+import nuke
 import re
 
 
 def buildAovs(node,aovList):
 
-    # build layers
-    
+    # build layers    
     constant = nuke.nodes.Constant()
     split = splitLayer(node,aovList[0])
     split[0]['name'].setValue('input')
     split[0].setInput(0,None)
+
+    contactSheet = nuke.nodes.ContactSheet(inputs = [split[0]], hide_input = True, postage_stamp = True, label = 'Aovs Contact Sheet')
+    setPos(split[0],contactSheet, x = -200,)
     Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
     setPos(split[1], Merge2, x = 300, y = 25)   
     setPos(Merge2,constant, y = -100)
     
-    
+    count = 1
     for a in aovList[1::]:
         split = splitLayer(split[0],a)
         Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [Merge2,split[1]])
         setPos(split[1], Merge2, x = 300, y = 25)
+        contactSheet.setInput(count,split[1])
+        count += 1
     
     # copy alpha and switch to bty by default
     input = nuke.nodes.Dot(inputs = [split[0]])
     setPos(split[0],input, x = -5, y = 100)
     copy = nuke.nodes.Copy(inputs = [Merge2, input ], channels = 'alpha')
     setPos(Merge2, copy, y = 100)
-    switch = nuke.nodes.Switch(inputs = [copy, input], label = 'beauty switch', which = 1)
-    switch['disable'].setExpression('!btyBypass')
+    switch = nuke.nodes.Switch(inputs = [copy, input, contactSheet], label = 'beauty contact switch', which = 1, hide_input = True)
+    switch['which'].setExpression('contactSheet ? 2 : btyBypass ? 1 : 0')   
     setPos(copy, switch, y = 100)
 
     return switch
@@ -129,7 +134,7 @@ def shaderBuilder():
         # begin group
         group.begin()
         groupInput = nuke.nodes.Input() 
-        setPos(node,groupInput, x= -25, y = -100)
+        setPos(node,groupInput, x = -40)
 
         aovList = getLayers(node)[0]
         utilityList = getLayers(node)[1]
@@ -138,7 +143,6 @@ def shaderBuilder():
 
         input = nuke.toNode('input')
         input.setInput(0, groupInput)
-        setPos(input, groupInput)
                      
         groupOutput = nuke.nodes.Output(inputs = [inOut])
         setPos(inOut,groupOutput, y = 100)
@@ -152,12 +156,13 @@ def shaderBuilder():
         # add shader tabs
         tabKnob = nuke.Tab_Knob('shaderTab','Shader Controls')
         btyKnob = nuke.Boolean_Knob('btyBypass', 'Beauty - Aovs', 1)
+        contactKnob = nuke.Boolean_Knob('contactSheet', 'Show Contact Sheet', 0)
 
-        shaderKnobs = [tabKnob, btyKnob]
+        shaderKnobs = [tabKnob, btyKnob, contactKnob]
 
         for k in shaderKnobs:
             group.addKnob(k)
-
+    
         group['label'].setValue(node.name())
 
     except:
