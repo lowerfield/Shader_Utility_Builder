@@ -4,12 +4,15 @@ import re
 def buildAovs(node,aovList):
 
     # build layers
+    
     constant = nuke.nodes.Constant()
     split = splitLayer(node,aovList[0])
+    split[0]['name'].setValue('input')
+    split[0].setInput(0,None)
     Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
-    setPos(split[1], Merge2, x = 300, y = 25)
-    
+    setPos(split[1], Merge2, x = 300, y = 25)   
     setPos(Merge2,constant, y = -100)
+    
     
     for a in aovList[1::]:
         split = splitLayer(split[0],a)
@@ -22,18 +25,27 @@ def buildAovs(node,aovList):
     copy = nuke.nodes.Copy(inputs = [Merge2, input ], channels = 'alpha')
     setPos(Merge2, copy, y = 100)
     switch = nuke.nodes.Switch(inputs = [copy, input], label = 'beauty switch', which = 1)
+    switch['disable'].setExpression('!btyBypass')
     setPos(copy, switch, y = 100)
+
+    return switch
+
     
+def buildUtility(node,utilityList):
+    
+    split = splitUtility(node,utilityList[0], x = 300)
 
+    for utilityLayer in utilityList[1::]:
+        split = splitUtility(split[0],utilityLayer, y = -5)
 
-      
-
+     
 def getLayers(node):
 
     # set aovs and utility layers
+    aovsKeyWords = ['indirect', 'direct', 'rgba']
+    
     aovList = sorted(list(set([c.split('.')[0] for c in node.channels() 
-            if re.search('indirect',c) or re.search('direct',c) 
-            or re.search('rgba',c) ])))[::-1]
+            for a in aovsKeyWords if re.search(a,c)])))[::-1]
     
     utilityList = sorted(list(set([c.split('.')[0] for c in node.channels()])))
     
@@ -54,6 +66,19 @@ def splitLayer(node,layer):
     setPos(input, output, x = 100, y = -25)
 
     return input, output
+
+    
+def splitUtility(node,utilityLayer):
+    
+    input = nuke.nodes.Dot(inputs = [node])
+    setPos(node,input, x = 200, y = -5)
+    shuffle = nuke.nodes.Shuffle(inputs = [input])
+    shuffle['in'].setValue(utilityLayer)
+    shuffle['postage_stamp'].setValue(True)
+    shuffle['name'].setValue(utilityLayer)
+    setPos(input, shuffle, x = -25, y = 200)
+
+    return input, shuffle
 
 
 
@@ -82,7 +107,7 @@ def setPos(inputNode, node, x = 0, y = 0):
     
     return
 
-def main():
+def shaderBuilder():
 
     # Create shader build group 
     try:
@@ -93,27 +118,52 @@ def main():
             nuke.message('Not posibble to build shader from selected node')
     
         group = nuke.nodes.Group(name = 'Shader_Build', postage_stamp = 'True', inputs =[node])
-        setPos(node,group)
+        setPos(node, group, x = -25)
         
         # begin group
         group.begin()
+        groupInput = nuke.nodes.Input() 
+        setPos(node,groupInput, x= -25, y = -100)
 
-        aovList = getLayers(node)
-        buildAovs(node,aovList[0])
-        
-        groupInput = nuke.nodes.Input()
-        groupOutput = nuke.nodes.Output(inputs = [groupInput])
+        aovList = getLayers(node)[0]
+        utilityList = getLayers(node)[1]
+        inOut = buildAovs(node,aovList)
+        #buildUtility(groupInput,utilityList)
+
+        input = nuke.toNode('input')
+        input.setInput(0, groupInput)
+        setPos(input, groupInput)
+                     
+        groupOutput = nuke.nodes.Output(inputs = [inOut])
+        setPos(inOut,groupOutput, y = 100)
         
         group.end()
+        setPos(node,group, x = -40, y = 100)
+
+        # set shader color
+        group['tile_color'].setValue(16711680L)
+        
+        # add shader tabs
+        tabKnob = nuke.Tab_Knob('shaderTab','Shader Controls')
+        btyKnob = nuke.Boolean_Knob('btyBypass', 'Beauty - Aovs', 1)
+
+        shaderKnobs = [tabKnob, btyKnob]
+
+        for k in shaderKnobs:
+            group.addKnob(k)
+
+        group['label'].setValue(node.name())
 
     except:
-        nuke.message('No node selected')
+        nuke.message('Something is wrong')
 
 
 
+shaderBuilder()
 
 
 
+                                                                                                                                                                                                
 
 
 
