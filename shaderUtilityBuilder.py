@@ -3,17 +3,29 @@ import re
 
 def buildAovs(node,aovList):
 
+    # build layers
     constant = nuke.nodes.Constant()
     split = splitLayer(node,aovList[0])
-    merge = nuke.nodes.Merge( operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
+    merge = nuke.nodes.Merge(operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
     setPos(split[1], merge, x = 300, y = 25)
     
     setPos(merge,constant, y = -100)
     
     for a in aovList[1::]:
         split = splitLayer(split[0],a)
-        merge = nuke.nodes.Merge( operation = 'plus', output = 'rgb', inputs = [merge,split[1]])
+        merge = nuke.nodes.Merge(operation = 'plus', output = 'rgb', inputs = [merge,split[1]])
         setPos(split[1], merge, x = 300, y = 25)
+    
+    # copy alpha and switch to bty by default
+    input = nuke.nodes.Dot(inputs = [split[0]])
+    setPos(split[0],input, x = -5, y = 100)
+    copy = nuke.nodes.Copy(inputs = [merge, input ], channels = 'alpha')
+    setPos(merge, copy, y = 100)
+    switch = nuke.nodes.Switch(inputs = [copy, input], label = 'beauty switch', which = 1)
+    setPos(copy, switch, y = 100)
+    
+
+
       
 
 def getLayers(node):
@@ -74,17 +86,20 @@ def main():
 
     # Create shader build group 
     try:
-        read = nuke.selectedNode()
-        if read.Class() == 'PostageStamp': # will need to change class to Read
-            read = read
+        node = nuke.selectedNode()
+        if node.Class() == 'PostageStamp': # will need to change class to Read
+            node = node
         else:
             nuke.message('Not posibble to build shader from selected node')
     
-        group = nuke.nodes.Group(name = 'Shader_Build', postage_stamp = 'True', inputs =[read])
-        setPos(read,group)
+        group = nuke.nodes.Group(name = 'Shader_Build', postage_stamp = 'True', inputs =[node])
+        setPos(node,group)
         
         # begin group
         group.begin()
+
+        aovList = getLayers(node)
+        buildAovs(node,aovList[0])
         
         groupInput = nuke.nodes.Input()
         groupOutput = nuke.nodes.Output(inputs = [groupInput])
@@ -93,6 +108,7 @@ def main():
 
     except:
         nuke.message('No node selected')
+
 
 
 
