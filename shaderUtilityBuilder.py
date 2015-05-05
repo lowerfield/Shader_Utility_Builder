@@ -27,7 +27,7 @@ def buildContactSheet(node, aovList, utilityList):
     return contactGroup
     
 
-def buildAovs(node,aovList):
+def buildAovs(node,aovList, utilityList):
 
     # build layers    
     constant = nuke.nodes.Constant()
@@ -54,8 +54,8 @@ def buildAovs(node,aovList):
     switch['which'].setExpression('contactSheet ? 2 : btyBypass ? 1 : 0')   
     setPos(copy, switch, y = 100)
 
-    contactSheet = buildContactSheet(input, aovlist, utilityList)
-    setPos(input, contactSheet, y = 100)
+    contactSheet = buildContactSheet(input, aovList, utilityList)
+    setPos(input, contactSheet, x = -25, y = 100)
     switch.setInput(2, contactSheet)
 
     return switch
@@ -163,7 +163,7 @@ def shaderBuilder():
 
         aovList = getLayers(node)[0]
         utilityList = getLayers(node)[1]
-        inOut = buildAovs(node,aovList)
+        inOut = buildAovs(node,aovList, utilityList)
         #buildUtility(groupInput,utilityList)
 
         input = nuke.toNode('input')
