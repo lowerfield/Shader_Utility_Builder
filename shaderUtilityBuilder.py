@@ -1,6 +1,31 @@
 import nuke
 import re
 
+def buildContactSheet(node, aovList, utilityList):
+
+    contactGroup = nuke.nodes.Group(name = 'Contact Sheet', inputs = [node], postage_stamp = True)
+    setPos(node,contactGroup, x = -40, y = 100)
+    contactGroup.begin()
+    groupInput = nuke.nodes.Input() 
+    
+    contactSheet = nuke.nodes.ContactSheet(postage_stamp = True, label = 'Aovs Contact Sheet')
+       
+    count = 0
+    for layer in aovList + utilityList:
+        shuffle = nuke.nodes.Shuffle(inputs = [groupInput], postage_stamp = True, name = layer)
+        shuffle['in'].setValue(layer)
+        text = nuke.nodes.Text(name = layer, message = layer, inputs = [shuffle])
+        setPos(shuffle, text, y = 100) 
+        contactSheet.setInput(count,text)
+        count += 1
+    
+    groupOutput = nuke.nodes.Output()
+    groupOutput.setInput(0, contactSheet)
+    setPos(contactSheet, groupOutput, y = 100)
+    contactGroup.end()
+
+    return contactGroup
+    
 
 def buildAovs(node,aovList):
 
@@ -10,28 +35,28 @@ def buildAovs(node,aovList):
     split[0]['name'].setValue('input')
     split[0].setInput(0,None)
 
-    contactSheet = nuke.nodes.ContactSheet(inputs = [split[0]], hide_input = True, postage_stamp = True, label = 'Aovs Contact Sheet')
-    setPos(split[0],contactSheet, x = -200,)
     Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
     setPos(split[1], Merge2, x = 300, y = 25)   
     setPos(Merge2,constant, y = -100)
     
-    count = 1
+
     for a in aovList[1::]:
         split = splitLayer(split[0],a)
         Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [Merge2,split[1]])
         setPos(split[1], Merge2, x = 300, y = 25)
-        contactSheet.setInput(count,split[1])
-        count += 1
-    
+
     # copy alpha and switch to bty by default
     input = nuke.nodes.Dot(inputs = [split[0]])
     setPos(split[0],input, x = -5, y = 100)
     copy = nuke.nodes.Copy(inputs = [Merge2, input ], channels = 'alpha')
     setPos(Merge2, copy, y = 100)
-    switch = nuke.nodes.Switch(inputs = [copy, input, contactSheet], label = 'beauty contact switch', which = 1, hide_input = True)
+    switch = nuke.nodes.Switch(inputs = [copy, input], label = 'beauty contact switch', which = 1)
     switch['which'].setExpression('contactSheet ? 2 : btyBypass ? 1 : 0')   
     setPos(copy, switch, y = 100)
+
+    contactSheet = buildContactSheet(input, aovlist, utilityList)
+    setPos(input, contactSheet, y = 100)
+    switch.setInput(2, contactSheet)
 
     return switch
 
@@ -98,7 +123,7 @@ def getLayers(node):
     
     for layer in aovList:
         utilityList.remove(layer)
-    
+
     return aovList, utilityList
 
 
