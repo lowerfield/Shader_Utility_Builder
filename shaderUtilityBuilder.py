@@ -190,8 +190,8 @@ def shaderBuilder():
     
         group['label'].setValue(node.name())
 
-    except:
-        nuke.message('Something is wrong')
+    except (RuntimeError, TypeError):
+        pass
 
 
 
