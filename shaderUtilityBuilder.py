@@ -1,20 +1,43 @@
+        pass
 import nuke
 import re
+import math
+import os
+
+__all__ = ['shaderBuilder']
 
 def buildContactSheet(node, aovList, utilityList):
 
+
+
     contactGroup = nuke.nodes.Group(name = 'Contact Sheet', inputs = [node], postage_stamp = True)
+
+    contactGroup['disable'].setExpression('!contactSheet')
+
+
     setPos(node,contactGroup, x = -40, y = 100)
     contactGroup.begin()
     groupInput = nuke.nodes.Input() 
-    
+
     contactSheet = nuke.nodes.ContactSheet(postage_stamp = True, label = 'Aovs Contact Sheet')
+
+    layersLength = len(aovList + utilityList)
+    rowsColumns = int(math.ceil(math.sqrt(layersLength)))
+    contactSheet['rows'].setValue(rowsColumns)
+    contactSheet['columns'].setValue(rowsColumns)
+
        
     count = 0
     for layer in aovList + utilityList:
         shuffle = nuke.nodes.Shuffle(inputs = [groupInput], postage_stamp = True, name = layer)
         shuffle['in'].setValue(layer)
-        text = nuke.nodes.Text(name = layer, message = layer, inputs = [shuffle])
+        text = nuke.nodes.Text2(name = layer, message = layer, inputs = [shuffle])
+        text['enable_shadows'].setValue(True)
+        text['shadow_opacity'].setValue(1)
+        text['shadow_distance'].setValue(7)
+        text['shadow_size'].setValue(2)
+        text['box'].setExpression('width',2)
+        text['box'].setExpression('height',3)
         setPos(shuffle, text, y = 100) 
         contactSheet.setInput(count,text)
         count += 1
@@ -53,20 +76,41 @@ def buildAovs(node,aovList, utilityList):
     switch = nuke.nodes.Switch(inputs = [copy, input], label = 'beauty contact switch', which = 1)
     switch['which'].setExpression('contactSheet ? 2 : btyBypass ? 1 : 0')   
     setPos(copy, switch, y = 100)
+    remove = nuke.nodes.Remove(inputs = [switch], operation = 'keep', channels = 'rgba')
+    setPos(switch, remove, y = +100)
+    premult = nuke.nodes.Premult(inputs = [remove])
+    premult['disable'].setExpression('btyBypass || contactSheet')
+    setPos(remove, premult, y = 100)
+
 
     contactSheet = buildContactSheet(input, aovList, utilityList)
     setPos(input, contactSheet, x = -25, y = 100)
     switch.setInput(2, contactSheet)
 
-    return switch
+    return premult
+
+
+
 
     
-def buildUtility(node,utilityList):
+def buildUtility(node, utilityList):
     
-    split = splitUtility(node,utilityList[0], x = 300)
+    split = splitUtility(node, utilityList[0])
+    setPos(split[0], split[0], x=50)
+    setPos(split[1], split[1], x=50)
+    # split[0].setSelected(True)
+    # split[1].setSelected(True)
 
     for utilityLayer in utilityList[1::]:
-        split = splitUtility(split[0],utilityLayer, y = -5)
+        split = splitUtility(split[0], utilityLayer)
+        # split[0].setSelected(True)
+        # split[1].setSelected(True)
+
+    # backdrop = nukescripts.autoBackdrop()
+    # backdrop['label'].setValue('Utility')
+
+    # for nodes in nuke.selectedNodes():
+    #    nodes.setSelected(True) 
 
      
 def getLayers(node):
@@ -98,29 +142,44 @@ def splitLayer(node,layer):
     return input, output
 
     
-def splitUtility(node,utilityLayer):
+def splitUtility(node, utilityLayer):
     
     input = nuke.nodes.Dot(inputs = [node])
-    setPos(node,input, x = 200, y = -5)
+    setPos(node,input, x = 100)
     shuffle = nuke.nodes.Shuffle(inputs = [input])
     shuffle['in'].setValue(utilityLayer)
     shuffle['postage_stamp'].setValue(True)
     shuffle['name'].setValue(utilityLayer)
-    setPos(input, shuffle, x = -25, y = 200)
+    setPos(input, shuffle, x = -25, y = 50)
 
     return input, shuffle
-
 
 
 def getLayers(node):
 
     # set aovs and utility layers
-    aovList = list(set([c.split('.')[0] for c in node.channels() 
-            if re.search('indirect',c) or re.search('direct',c) 
-            or re.search('rgba',c) ]))
+    aovKeyWords = ['direct',
+                   'indirect',
+                   'sss',
+                   'emission',
+                   'obj']
+    aovList = []
+
+    # set aovs and utility layers
+    for c in node.channels():
+        for aov in aovKeyWords:
+            if re.search(aov,c):
+                aovList.append(c.split('.')[0])
     
+    aovList = sorted(list(set(aovList)))
+
+    shadow = [shadow for shadow in aovList if re.search('shadow', shadow)]
+
+    for shadow in shadow:
+        aovList.remove(shadow)
+
     utilityList = list(set([c.split('.')[0] for c in node.channels()]))
-    
+        
     for layer in aovList:
         utilityList.remove(layer)
 
@@ -142,36 +201,48 @@ def shaderBuilder():
     # Create shader build group 
     try:
         node = nuke.selectedNode()
-        if node.Class() == 'PostageStamp': # will need to change class to Read
+        if node.Class() in ('Read', 'Group'): # will need to change class to Read
             node = node
         else:
             nuke.message('Not posibble to build shader from selected node')
-    
-        group = nuke.nodes.Group(name = 'Shader_Build', postage_stamp = 'True', inputs =[node])
+
+        name = os.path.dirname(node['file'].value()).split('/')[-3]
+        group = nuke.nodes.Group(name = name, postage_stamp = 'True', inputs =[node])
         setPos(node, group, x = -25)
 
         count = 1
-        while nuke.exists('Shader_Build' + str(count)):
+        while nuke.exists( name + str(count)):
             count += 1
         
-        group['name'].setValue('Shader_Build' + str(count))
+        group['name'].setValue( name + str(count))
+
+        group['label'].setValue('Shader_Build')
         
         # begin group
         group.begin()
         groupInput = nuke.nodes.Input() 
         setPos(node,groupInput, x = -40)
+        setPos(node,groupInput, x = -40, y = 50)
+
+        unpremult = nuke.nodes.Unpremult(channels = 'all', inputs = [groupInput])
+        unpremult['disable'].setExpression('btyBypass || contactSheet')
+        setPos(groupInput, unpremult, y = 50)
+
 
         aovList = getLayers(node)[0]
         utilityList = getLayers(node)[1]
         inOut = buildAovs(node,aovList, utilityList)
-        #buildUtility(groupInput,utilityList)
 
+        unpremultUtility = nuke.nodes.Unpremult(channels = 'all', inputs = [groupInput], name = 'Utility')
+        setPos(groupInput, unpremultUtility , x = 500)
+        buildUtility(unpremultUtility, utilityList)  
+             
         input = nuke.toNode('input')
-        input.setInput(0, groupInput)
+        input.setInput(0, unpremult)
                      
         groupOutput = nuke.nodes.Output(inputs = [inOut])
         setPos(inOut,groupOutput, y = 100)
-        
+
         group.end()
         setPos(node,group, x = -40, y = 100)
 
@@ -188,16 +259,10 @@ def shaderBuilder():
         for k in shaderKnobs:
             group.addKnob(k)
     
-        group['label'].setValue(node.name())
+
 
     except (RuntimeError, TypeError):
         pass
-
-
-
-shaderBuilder()
-
-
 
                                                                                                                                                                                                 
 
