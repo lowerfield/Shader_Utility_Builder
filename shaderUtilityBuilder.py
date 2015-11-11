@@ -6,63 +6,19 @@ import os
 
 __all__ = ['shaderBuilder']
 
-def buildContactSheet(node, aovList, utilityList):
-
-
-
-    contactGroup = nuke.nodes.Group(name = 'Contact Sheet', inputs = [node], postage_stamp = True)
-
-    contactGroup['disable'].setExpression('!contactSheet')
-
-
-    setPos(node,contactGroup, x = -40, y = 100)
-    contactGroup.begin()
-    groupInput = nuke.nodes.Input() 
-
-    contactSheet = nuke.nodes.ContactSheet(postage_stamp = True, label = 'Aovs Contact Sheet')
-
-    layersLength = len(aovList + utilityList)
-    rowsColumns = int(math.ceil(math.sqrt(layersLength)))
-    contactSheet['rows'].setValue(rowsColumns)
-    contactSheet['columns'].setValue(rowsColumns)
-
-       
-    count = 0
-    for layer in aovList + utilityList:
-        shuffle = nuke.nodes.Shuffle(inputs = [groupInput], postage_stamp = True, name = layer)
-        shuffle['in'].setValue(layer)
-        text = nuke.nodes.Text2(name = layer, message = layer, inputs = [shuffle])
-        text['enable_shadows'].setValue(True)
-        text['shadow_opacity'].setValue(1)
-        text['shadow_distance'].setValue(7)
-        text['shadow_size'].setValue(2)
-        text['box'].setExpression('width',2)
-        text['box'].setExpression('height',3)
-        setPos(shuffle, text, y = 100) 
-        contactSheet.setInput(count,text)
-        count += 1
     
-    groupOutput = nuke.nodes.Output()
-    groupOutput.setInput(0, contactSheet)
-    setPos(contactSheet, groupOutput, y = 100)
-    contactGroup.end()
-
-    return contactGroup
-    
-
-def buildAovs(node,aovList, utilityList):
+def buildAovs(node,aovList,utilityList,unpremult):
 
     # build layers    
-    constant = nuke.nodes.Constant()
+    shuffle = nuke.nodes.Shuffle(inputs = [unpremult], red = 'black', green = 'black', blue = 'black', alpha = 'black')
     split = splitLayer(node,aovList[0])
     split[0]['name'].setValue('input')
     split[0].setInput(0,None)
 
-    Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [constant,split[1]])
+    Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [shuffle,split[1]])
     setPos(split[1], Merge2, x = 300, y = 25)   
-    setPos(Merge2,constant, y = -100)
+    setPos(Merge2,shuffle, y = -100)
     
-
     for a in aovList[1::]:
         split = splitLayer(split[0],a)
         Merge2 = nuke.nodes.Merge2(operation = 'plus', output = 'rgb', inputs = [Merge2,split[1]])
@@ -206,7 +162,7 @@ def shaderBuilder():
         else:
             nuke.message('Not posibble to build shader from selected node')
 
-        name = os.path.dirname(node['file'].value()).split('/')[-3]
+        name = os.path.basename(node['file'].value()).split('.')[0]
         group = nuke.nodes.Group(name = name, postage_stamp = 'True', inputs =[node])
         setPos(node, group, x = -25)
 
@@ -231,7 +187,7 @@ def shaderBuilder():
 
         aovList = getLayers(node)[0]
         utilityList = getLayers(node)[1]
-        inOut = buildAovs(node,aovList, utilityList)
+        inOut = buildAovs(node,aovList, utilityList,unpremult)
 
         unpremultUtility = nuke.nodes.Unpremult(channels = 'all', inputs = [groupInput], name = 'Utility')
         setPos(groupInput, unpremultUtility , x = 500)
@@ -263,9 +219,6 @@ def shaderBuilder():
 
     except (RuntimeError, TypeError):
         pass
-
-                                                                                                                                                                                                
-
 
 
 
