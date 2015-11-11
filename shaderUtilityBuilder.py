@@ -83,7 +83,7 @@ def buildAovs(node,aovList, utilityList):
     setPos(remove, premult, y = 100)
 
 
-    contactSheet = buildContactSheet(input, aovList, utilityList)
+    contactSheet = nuke.nodes.LayerContactSheet(inputs = [input], showLayerNames = True)
     setPos(input, contactSheet, x = -25, y = 100)
     switch.setInput(2, contactSheet)
 
