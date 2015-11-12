@@ -40,6 +40,7 @@ def buildAovs(node,aovList,utilityList,unpremult):
 
 
     contactSheet = nuke.nodes.LayerContactSheet(inputs = [input], showLayerNames = True)
+    contactSheet['showLayerNames'].setExpression('contactSheet')
     setPos(input, contactSheet, x = -25, y = 100)
     switch.setInput(2, contactSheet)
 
@@ -118,6 +119,7 @@ def getLayers(node):
                    'indirect',
                    'sss',
                    'emission',
+                   'transmission',
                    'obj']
     aovList = []
 
