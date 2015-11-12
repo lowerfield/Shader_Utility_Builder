@@ -45,30 +45,16 @@ def buildAovs(node,aovList,utilityList,unpremult):
     switch.setInput(2, contactSheet)
 
     return premult
-
-
-
-
+    
     
 def buildUtility(node, utilityList):
     
     split = splitUtility(node, utilityList[0])
     setPos(split[0], split[0], x=50)
     setPos(split[1], split[1], x=50)
-    # split[0].setSelected(True)
-    # split[1].setSelected(True)
 
     for utilityLayer in utilityList[1::]:
         split = splitUtility(split[0], utilityLayer)
-        # split[0].setSelected(True)
-        # split[1].setSelected(True)
-
-    # backdrop = nukescripts.autoBackdrop()
-    # backdrop['label'].setValue('Utility')
-
-    # for nodes in nuke.selectedNodes():
-    #    nodes.setSelected(True) 
-
      
 def getLayers(node):
 
